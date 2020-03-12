@@ -1,0 +1,28 @@
+{
+  "name": "GCloudHandler",
+  "keywords": "google, iot, cloud",
+  "description": "Arduino Library for Google IoT Cloud connection",
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/milesburton/Arduino-Temperature-Control-Library.git"
+  },
+  "authors":
+  [
+    {
+      "name": "Dennis Gubsky",
+      "email": "denn.gubsly@gmail.com",
+      "maintainer": true
+    },
+  ],
+  "dependencies": [
+    {
+      "name": "Google Cloud IoT Core JWT",
+      "authors": "Vladimir Korukov <mrvladimir@gusclass.com>",
+      "frameworks": "arduino"
+    }
+  ],
+  "version": "1.0.0",
+  "frameworks": "arduino",
+  "platforms": "*"
+}
