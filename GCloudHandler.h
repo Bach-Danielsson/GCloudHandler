@@ -13,9 +13,9 @@ Released into the public domain.
 
 // Defince this if FreeRTOS used in your project. This will run a handler thread.
 // If not defined then ::loop() function should be called in cycle
-#define GCLOUD_USE_FREERTOS
+// #define GCLOUD_USE_FREERTOS
 // Define this if debug output required to Serial
-#define __DEBUG
+// #define __DEBUG
 
 const unsigned long MIN_BACKOFF = 1000;
 const unsigned long MAX_BACKOFF = 120000;
