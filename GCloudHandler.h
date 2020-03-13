@@ -20,7 +20,7 @@ Released into the public domain.
 const unsigned long MIN_BACKOFF = 1000;
 const unsigned long MAX_BACKOFF = 120000;
 
-class GCloudHandler: public ValuesProvider {
+class GCloudHandler {
 protected:
     // These members may be changed in ::setup() function by external configuration 
     bool CLOUD_ON = true;
@@ -28,7 +28,6 @@ protected:
     String IOT_LOCATION;
     String IOT_REGISTRY_ID;
     String IOT_DEVICE_ID;
-private:
     // To get the private key run (where private-key.pem is the ec private key
     // used to create the certificate uploaded to google cloud iot):
     // openssl ec -in <private-key.pem> -noout -text
@@ -39,6 +38,7 @@ private:
     // is probably wrong with your key.
     String IOT_PRIVATE_KEY;
 
+private:
     // To get the certificate for your region run:
     //   openssl s_client -showcerts -connect mqtt.googleapis.com:8883
     // for standard mqtt or for LTS:
@@ -61,6 +61,8 @@ private:
     time_t iss = 0; 
 
     TaskHandle_t xLoopTask = NULL;
+
+    void cleanup();
 public:
     MQTTClient *iotMqttClient;
     long lastReconnect = 0;
@@ -70,7 +72,6 @@ public:
 #ifndef GCLOUD_USE_FREERTOS
     void loop();
 #endif
-    void setup();
     void reconnect();
 
     bool isConnected();
@@ -96,6 +97,11 @@ public:
     bool publishState(const char* data, int length);
 
     String getDeviceJWT();
+
+    void setConfiguration(const char* _IOT_PROJECT_ID, const char* _IOT_LOCATION
+        , const char* _IOT_REGISTRY_ID, const char* _IOT_DEVICE_ID
+        , const char* _IOT_PRIVATE_KEY);
+    void setCloudOn(bool on) { CLOUD_ON = on; }
 };
 
 #endif /*__IOT_CLOUD_HANDLER_*/

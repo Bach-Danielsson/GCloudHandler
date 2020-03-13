@@ -72,12 +72,26 @@ GCloudHandler::GCloudHandler(const char* _IOT_PROJECT_ID, const char* _IOT_LOCAT
     __iotHandler = this;
 }
 
+void GCloudHandler::setConfiguration(const char* _IOT_PROJECT_ID, const char* _IOT_LOCATION
+	, const char* _IOT_REGISTRY_ID, const char* _IOT_DEVICE_ID
+	, const char* _IOT_PRIVATE_KEY) {
+    IOT_PROJECT_ID = _IOT_PROJECT_ID;
+    IOT_LOCATION = _IOT_LOCATION;
+    IOT_REGISTRY_ID = _IOT_REGISTRY_ID;
+    IOT_DEVICE_ID = _IOT_DEVICE_ID;
+    IOT_PRIVATE_KEY = _IOT_PRIVATE_KEY;
+}
+
+void GCloudHandler::cleanup() {
+  if (iotDevice != NULL) delete iotDevice;
+  if (iotMqttClient != NULL) { iotMqttClient->disconnect(); delete iotMqttClient; }
+  if (netClient != NULL) delete netClient;
+  if (xLoopTask != NULL) { vTaskDelete(xLoopTask); xLoopTask = NULL; }
+}
+
 GCloudHandler::~GCloudHandler() {
-    __iotHandler = NULL;
-    if (iotDevice != NULL) delete iotDevice;
-    if (iotMqttClient != NULL) { iotMqttClient->disconnect(); delete iotMqttClient; }
-    if (netClient != NULL) delete netClient;
-    if (xLoopTask != NULL) { vTaskDelete(xLoopTask); xLoopTask = NULL; }
+  __iotHandler = NULL;
+  cleanup();
 }
 
 String GCloudHandler::getDeviceJWT() {
@@ -133,6 +147,7 @@ void GCloudHandler::loop() {
 #endif /*GCLOUD_USE_FREERTOS*/
 
 void GCloudHandler::setup() {
+  cleanup();
   if (CLOUD_ON) {
     iotDevice = new CloudIoTCoreDevice(                                         
       IOT_PROJECT_ID.c_str(), IOT_LOCATION.c_str(), IOT_REGISTRY_ID.c_str(), IOT_DEVICE_ID.c_str(),
