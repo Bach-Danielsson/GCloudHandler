@@ -100,24 +100,23 @@ gcloud pubsub subscriptions pull --limit 500 --auto-ack <your-subscription-name>
 
 Define an instance of GCloudHandler class:
 
-GCloudHandler gCloudHandler(_IOT_PROJECT_ID, _IOT_LOCATION
-	, _IOT_REGISTRY_ID, _IOT_DEVICE_ID, _IOT_PRIVATE_KEY);
+	GCloudHandler gCloudHandler(_IOT_PROJECT_ID, _IOT_LOCATION
+		, _IOT_REGISTRY_ID, _IOT_DEVICE_ID, _IOT_PRIVATE_KEY);
 
 Call gCloudHandler.setup() in your setup function:
 
-void setup() {
-...
-	gCloudHandler.setup();
-...
-}
+	void setup() {
+	...
+		gCloudHandler.setup();
+	...
+	}
 
 Make sure to call gCloudHandler.loop() in your loop function:
 
-void loop() {
-...
-	gCloudHandler.loop();
-
-}
+	void loop() {
+	...
+		gCloudHandler.loop();
+	}
 
 Create GCloudHandler derived class and override onCommand and onConfigUpdate methods in case you need to receive Cloud commands and configuration updates.
 
