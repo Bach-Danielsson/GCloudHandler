@@ -63,17 +63,27 @@ private:
     TaskHandle_t xLoopTask = NULL;
 
     void cleanup();
+
+#ifdef GCLOUD_USE_FREERTOS
 public:
+#endif
+    String getDeviceJWT();
     MQTTClient *iotMqttClient;
     long lastReconnect = 0;
     unsigned long connectionBackoffTime = MIN_BACKOFF;
 
+public:
+    // Setup internal components and start inner RTOS task or prepare to loop() calls.
+    // Setup may be called again after setConfiguration call. This will free all allocated
+    // resources and allocate new components and establish new connections
     virtual void setup();
 #ifndef GCLOUD_USE_FREERTOS
+    // Call this method in main loop 
     void loop();
 #endif
+    // Reconnect to IoT Cloud
     void reconnect();
-
+    // Returns true if connected to IoT Cloud
     bool isConnected();
 
     GCloudHandler(const char* _IOT_PROJECT_ID, const char* _IOT_LOCATION
@@ -81,26 +91,35 @@ public:
 	, const char* _IOT_PRIVATE_KEY, const char* _root_cert = NULL);
     virtual ~GCloudHandler();
 
+    // Called when connection established to IoT cloud
     virtual void onConnected();
+    // Internally used message callback
     virtual void onMessage(String &topic, String &payload);
     // Handle command from Cloud
     virtual void onCommand(String& command);
     // Handle configuration update from cloud
     virtual void onConfigUpdate(String& config);
 
+    // Publish telemetry data to IoT PubSub sink
     bool publishTelemetry(String data);
+    // Publish telemetry data to IoT PubSub sink
     bool publishTelemetry(const char* data, int length);
+    // Publish telemetry data to IoT PubSub sink
     bool publishTelemetry(String subtopic, String data);
+    // Publish telemetry data to IoT PubSub sink
     bool publishTelemetry(String subtopic, const char* data, int length);
-    // Helper that just sends default sensor
+    //  Publish device state data to IoT cloud
     bool publishState(String data);
+    //  Publish device state data to IoT cloud
     bool publishState(const char* data, int length);
 
-    String getDeviceJWT();
-
+    // Update configuration. This will not initiate reconnection. Use setup() call to 
+    // re-allocate components and re-establish connection
     void setConfiguration(const char* _IOT_PROJECT_ID, const char* _IOT_LOCATION
         , const char* _IOT_REGISTRY_ID, const char* _IOT_DEVICE_ID
         , const char* _IOT_PRIVATE_KEY);
+    // Enable/diable cloud connection. This will not immediately disconnect from cloud.
+    // Use setup() call to update internal state of the handler
     void setCloudOn(bool on) { CLOUD_ON = on; }
 };
 

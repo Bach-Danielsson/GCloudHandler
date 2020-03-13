@@ -11,7 +11,6 @@ GCloudHandler class may run in FreeRTOS configuration if GCLOUD_USE_FREERTOS sym
 
 Currently, we support the following hardware targets:
 
-* Genuino MKR1000 and WiFi101 (not tested)
 * Espressif ESP32
 * Espressif ESP8266 (not tested)
 
@@ -96,6 +95,31 @@ Then read the telemetry messages:
 ```
 gcloud pubsub subscriptions pull --limit 500 --auto-ack <your-subscription-name>
 ```
+
+## Usage
+
+Define an instance of GCloudHandler class:
+
+GCloudHandler gCloudHandler(_IOT_PROJECT_ID, _IOT_LOCATION
+	, _IOT_REGISTRY_ID, _IOT_DEVICE_ID, _IOT_PRIVATE_KEY);
+
+Call gCloudHandler.setup() in your setup function:
+
+void setup() {
+...
+	gCloudHandler.setup();
+...
+}
+
+Make sure to call gCloudHandler.loop() in your loop function:
+
+void loop() {
+...
+	gCloudHandler.loop();
+
+}
+
+Create GCloudHandler derived class and override onCommand and onConfigUpdate methods in case you need to receive Cloud commands and configuration updates.
 
 ## Notes on the certificate
 

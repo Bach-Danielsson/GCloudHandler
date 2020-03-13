@@ -158,9 +158,10 @@ void GCloudHandler::setup() {
     iotMqttClient = new MQTTClient(512);
     iotMqttClient->setOptions(180, true, 1000); // keepAlive, cleanSession, timeout	 
     iotMqttClient->onMessage(__iotMessageReceived);   
-
+#ifdef GCLOUD_USE_FREERTOS
     xTaskCreatePinnedToCore( vTaskLoop, "IOT_LOOP", 4096, (void* const) this , tskIDLE_PRIORITY, &xLoopTask, 0);
     configASSERT( xLoopTask );
+#endif /*GCLOUD_USE_FREERTOS*/
   }
 }
 
