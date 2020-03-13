@@ -1,18 +1,17 @@
 {
   "name": "GCloudHandler",
   "keywords": "google, iot, cloud",
-  "description": "Arduino Library for Google IoT Cloud connection",
+  "description": "Library for connecting to Google IoT Cloud and handling commands and configuration updtates.",
   "repository": {
     "type": "git",
     "url": "https://github.com/denn-gubsky/GCloudHandler.git"
   },
-  "authors": [
-    {
-      "name": "Dennis Gubsky",
-      "email": "denn.gubsky@gmail.com",
-      "maintainer": true
-    }
-  ],
+  "authors":
+  {
+    "name": "Dennis Gubsky",
+    "email": "denn.gubsky@gmail.com",
+    "maintainer": true
+  },
   "dependencies": [
     {
       "name": "Google Cloud IoT Core JWT",
