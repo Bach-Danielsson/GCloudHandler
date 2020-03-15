@@ -191,8 +191,8 @@ void GCloudHandler::onConfigUpdate(String& config) {
 }
 
 void GCloudHandler::onMessage(String &topic, String &payload) {
-  if (topic == iotDevice->getCommandsTopic()) onCommand(payload);
-  else if (topic == iotDevice->getConfigTopic()) onConfigUpdate(payload);
+  if (topic.startsWith(iotDevice->getCommandsTopic())) onCommand(payload);
+  else if (topic.startsWith(iotDevice->getConfigTopic())) onConfigUpdate(payload);
 #ifdef __DEBUG
   else {
     Serial.print("GCloudHandler::onMessage: ");	
