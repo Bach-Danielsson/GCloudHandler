@@ -14,8 +14,8 @@
   },
   "dependencies": [
     {
-      "name": "Google Cloud IoT Core JWT",
-      "authors": "Vladimir Korukov <mrvladimir@gusclass.com>",
+      "name": "MQTT",
+      "authors": "Joel Gaehwiler",
       "frameworks": "arduino"
     }
   ],
