@@ -19,6 +19,7 @@ Released into the public domain.
 
 const unsigned long MIN_BACKOFF = 1000;
 const unsigned long MAX_BACKOFF = 120000;
+const int MAX_PRIVATE_KEYS = 3;
 
 class GCloudHandler {
 protected:
@@ -34,9 +35,11 @@ protected:
     // and copy priv: part.
     // The key length should be exactly the same as the key length bellow (32 pairs
     // of hex digits). If it's bigger and it starts with "00:" delete the "00:". If
-    // it's smaller add "00:" to the start. If it's too big or too small something
+    // it's smaller add "00:" to the start. If it's too big or too small something    
     // is probably wrong with your key.
-    String IOT_PRIVATE_KEY;
+    // Up to three keys may be added
+    String IOT_PRIVATE_KEY[MAX_PRIVATE_KEYS];
+    int privateKeyIndex = 0; 
 
 private:
     // To get the certificate for your region run:
@@ -86,9 +89,17 @@ public:
     // Returns true if connected to IoT Cloud
     bool isConnected();
 
+    // Create a handler instance with project and device parameters
     GCloudHandler(const char* _IOT_PROJECT_ID, const char* _IOT_LOCATION
 	, const char* _IOT_REGISTRY_ID, const char* _IOT_DEVICE_ID
 	, const char* _IOT_PRIVATE_KEY, const char* _root_cert = NULL);
+
+    // Create a handler instance with project and device parameters and 
+    // miltiple private keys. Up to three keys allowed. const char** == NULL 
+    // should be used as termination.
+    GCloudHandler(const char* _IOT_PROJECT_ID, const char* _IOT_LOCATION
+	, const char* _IOT_REGISTRY_ID, const char* _IOT_DEVICE_ID
+	, const char** _IOT_PRIVATE_KEYS, const char* _root_cert = NULL);
     virtual ~GCloudHandler();
 
     // Called when connection established to IoT cloud
@@ -118,6 +129,14 @@ public:
     void setConfiguration(const char* _IOT_PROJECT_ID, const char* _IOT_LOCATION
         , const char* _IOT_REGISTRY_ID, const char* _IOT_DEVICE_ID
         , const char* _IOT_PRIVATE_KEY);
+    // Update configuration. This will not initiate reconnection. Use setup() call to 
+    // re-allocate components and re-establish connection
+    // Setup miltiple private keys. Up to three keys allowed. const char** == NULL 
+    // should be used as termination.
+    void setConfiguration(const char* _IOT_PROJECT_ID, const char* _IOT_LOCATION
+        , const char* _IOT_REGISTRY_ID, const char* _IOT_DEVICE_ID
+        , const char** _IOT_PRIVATE_KEYS);
+
     // Enable/diable cloud connection. This will not immediately disconnect from cloud.
     // Use setup() call to update internal state of the handler
     void setCloudOn(bool on) { CLOUD_ON = on; }

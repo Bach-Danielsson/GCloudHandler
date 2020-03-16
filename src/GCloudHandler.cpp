@@ -14,7 +14,7 @@ Released into the public domain.
 static GCloudHandler* __iotHandler = NULL;
 
 // Time (seconds) to expire token += 20 minutes for drift
-const int jwt_exp_secs = 3600; // Maximum 24H (3600*24)
+const int JWT_EXPIRATION_SECS = 3600; // Maximum 24H (3600*24)
 
 // To get the certificate for your region run:
 //   openssl s_client -showcerts -connect mqtt.googleapis.com:8883
@@ -66,10 +66,11 @@ GCloudHandler::GCloudHandler(const char* _IOT_PROJECT_ID, const char* _IOT_LOCAT
     , IOT_LOCATION(_IOT_LOCATION)
     , IOT_REGISTRY_ID(_IOT_REGISTRY_ID)
     , IOT_DEVICE_ID(_IOT_DEVICE_ID)
-    , IOT_PRIVATE_KEY(_IOT_PRIVATE_KEY)
     , root_cert(_root_cert == NULL ? __default_root_cert : _root_cert)
 {
     __iotHandler = this;
+    IOT_PRIVATE_KEY[0] = _IOT_PRIVATE_KEY;
+    for (int i = 1; i < MAX_PRIVATE_KEYS; i++) IOT_PRIVATE_KEY[i] = "";
 }
 
 void GCloudHandler::setConfiguration(const char* _IOT_PROJECT_ID, const char* _IOT_LOCATION
@@ -79,10 +80,26 @@ void GCloudHandler::setConfiguration(const char* _IOT_PROJECT_ID, const char* _I
     IOT_LOCATION = _IOT_LOCATION;
     IOT_REGISTRY_ID = _IOT_REGISTRY_ID;
     IOT_DEVICE_ID = _IOT_DEVICE_ID;
-    IOT_PRIVATE_KEY = _IOT_PRIVATE_KEY;
+    IOT_PRIVATE_KEY[0] = _IOT_PRIVATE_KEY;
+    for (int i = 1; i < MAX_PRIVATE_KEYS; i++) IOT_PRIVATE_KEY[i] = "";
+}
+
+void GCloudHandler::setConfiguration(const char* _IOT_PROJECT_ID, const char* _IOT_LOCATION
+    , const char* _IOT_REGISTRY_ID, const char* _IOT_DEVICE_ID
+    , const char** _IOT_PRIVATE_KEYS) {
+    IOT_PROJECT_ID = _IOT_PROJECT_ID;
+    IOT_LOCATION = _IOT_LOCATION;
+    IOT_REGISTRY_ID = _IOT_REGISTRY_ID;
+    IOT_DEVICE_ID = _IOT_DEVICE_ID;
+    int i = 0;
+    for (i = 0; i < MAX_PRIVATE_KEYS && _IOT_PRIVATE_KEYS[i] != NULL; i++) {
+      IOT_PRIVATE_KEY[i] = _IOT_PRIVATE_KEYS[i];
+    }
+    for (; i < MAX_PRIVATE_KEYS; i++) IOT_PRIVATE_KEY[i] = "";
 }
 
 void GCloudHandler::cleanup() {
+  privateKeyIndex = 0;
   if (iotDevice != NULL) delete iotDevice;
   if (iotMqttClient != NULL) { iotMqttClient->disconnect(); delete iotMqttClient; }
   if (netClient != NULL) delete netClient;
@@ -100,10 +117,17 @@ String GCloudHandler::getDeviceJWT() {
     tm timeinfo;
     localtime_r(&iss, &timeinfo);
     if (timeinfo.tm_year >= (2019 - 1900) && iotDevice != NULL) {
+#ifdef __DEBUG      
       Serial.println("Refreshing JWT");
-      iotJWT = iotDevice->createJWT(iss, jwt_exp_secs);
+#endif
+      iotDevice->setPrivateKey(IOT_PRIVATE_KEY[privateKeyIndex++].c_str());
+      privateKeyIndex %= MAX_PRIVATE_KEYS;
+      if (IOT_PRIVATE_KEY[privateKeyIndex].isEmpty()) privateKeyIndex = 0;
+      iotJWT = iotDevice->createJWT(iss, JWT_EXPIRATION_SECS);
     }
+#ifdef __DEBUG      
     else { Serial.println("NTP time is not updated yet"); }
+#endif
 	}
 	return iotJWT;
 }
@@ -151,7 +175,7 @@ void GCloudHandler::setup() {
   if (CLOUD_ON) {
     iotDevice = new CloudIoTCoreDevice(                                         
       IOT_PROJECT_ID.c_str(), IOT_LOCATION.c_str(), IOT_REGISTRY_ID.c_str(), IOT_DEVICE_ID.c_str(),
-      IOT_PRIVATE_KEY.c_str());	  
+      IOT_PRIVATE_KEY[0].c_str());	  
     Serial.print("GCloudHandler device created: "); Serial.println(iotDevice->getDeviceId());
     netClient = new WiFiClientSecure();
     Serial.println("GCloudHandler netClient created");
@@ -173,7 +197,9 @@ void GCloudHandler::onConnected() {
 
   struct tm timeinfo;
   if(!getLocalTime(&timeinfo)){
+#ifdef __DEBUG    
     Serial.println("Failed to obtain time");
+#endif    
     return;
   }
 
@@ -195,7 +221,6 @@ void GCloudHandler::onMessage(String &topic, String &payload) {
   else if (iotDevice->getConfigTopic().startsWith(topic)) onConfigUpdate(payload);
 #ifdef __DEBUG
   else {
-    Serial.println(iotDevice->getCommandsTopic());
     Serial.print("GCloudHandler::onMessage: ");	
     Serial.print(topic);
     Serial.print(", ");
